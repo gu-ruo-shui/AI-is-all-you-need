@@ -13,6 +13,7 @@ LLM application dev
       - logprobs
       - top_logprobs
   - image
+  - what is token
 - prompt engineering
   - [普通人如何通过DeepSeek提升工作效率](https://www.bilibili.com/video/BV1UdAVeXECY)
   - [12个精选prompt框架 ](https://waytoagi.feishu.cn/wiki/ByWEw79g5icSQGkAcNrcgbBonUc)

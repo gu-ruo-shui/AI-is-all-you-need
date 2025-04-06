@@ -158,10 +158,93 @@ vllm 代码库
 - How to extract (and inject) KV cache from (to) vLLM
     - connector API: `distributed.kv_connector.simple_connector.py`
     - called in `model_runner.py`
-        * before model forward: try receive KV cache (inject KV cache into vLLM's paged memory)
+        * before model forward: try to receive KV cache (inject KV cache into vLLM's paged memory)
         * model forward
         * after model forward: extract KV cache form vLLM's paged memory and send it to outside
 - When to send the request to P and D node
     - first P then D
     - first D then P
 
+# EP04-Speculative decoding
+- What is speculative decoding
+    - LLM inference is GPU-memory-bound
+    - find a way to increase amount of computation but does not significantly increase the amount of GPU memory access
+        - reference paper
+            - robo-line Storage -- David A. Patterson
+    - Solution: Generate token --> Guess multiple tokens and verify
+        - In terms of token generation per iteration
+            - Guess 3 token, acceptance rate 2/3
+            - 2 tokens of guessing is correct, LLM inference will generate a new token --> 3 token
+        - Iteration time
+            - Computation: (1 + 3)x
+            - Memory:
+                - w/o spec: Model parameters (8*2 GB) + KV caches (n * 100 KB)
+                - w/  spec: Model parameters (8*2 GB) + KV caches ( (n+3) * 100 KB)
+            - Iteration time almost unchanged
+    - A metric to measure whether it's computation-bound or memory-bound: arithmetic intensity
+        - Definition: FLOPS(floating point per second) / MIPs (memory instructions)
+- How to guess tokens?
+    - N-gram
+        - Build mapping: if last 3 tokens are A, B, C, next 2 tokens are D, E
+        - processing flow
+            - To be or not to be, this is a question
+                - [To be or] --> [not to]
+                - [be or not] --> [to be]
+                - ...
+                - [, this is] --> [a qustion]
+            - Build N-gram from request input, use this N-gram to guess tokens.
+                - The followings are Shakespeare's famous quotes
+                  ....
+                  To be or not tobe, this is a question
+                  ....
+                  what is the best quote for my life?
+            - Assume that LLM already generated
+                - Sure! We recomend you this quote: "To be or"
+                  [To be or] --> [not to]
+                  Guess: next two tokens are not to
+                  Verify: yes yes
+                - Sure! We recomend you this quote: To be or not to be 
+    - Model-based (draft model)
+        - Parallel guessing
+            - Good: fast
+            - Bod: guessing second token without knowing first token
+        - Autoregressive guessing
+            - Good: guessing second token after knowing first token
+            - Bad: slow
+    - Verify
+        - Tree verification (one of assume method)
+            - [To be or] --> [not to], [sleep in], [go to]
+            - [To be or] guess multiple choices: [not to], [sleep in], [go to]
+            - How to tell if the verification is right or wrong
+                - Deterministic sampling (spec decode bad case)
+                - Random sampling : correct when guess probability > threshold
+        - Example:
+            - Input: [To be or] (already-decode output) [not to] (guess token)
+                [To be or not to]
+                [To -> be]
+                [be -> or]
+                [or -> not] our guess "not" is correct
+                [not -> to] our guess "to" is correct
+                [to -> be] be is the right next token
+          
+            - Input: [To be or] (already-decode output) [not to] (guess token)
+                [To be or not to]
+                [To -> be]
+                [be -> or]
+                [or -> not] our guess "not" is correct
+                [not -> to] our guess "be" is wrong, it should be "to"
+                [to -> be] be is the right next token (discard)
+
+    - Deployment (especially model-based)
+        - Small model needs KV cache, how can we allocate that?
+        - Small model is small, so it needs different parallelism strategy
+            - Not parallel, small model in 0 GPU + vLLM force different GPU has the same GPU memory utilization -> other GPU memory waste
+        - Pre-allocate KV cache for guessed tokens
+            - What if pre-allocated tokens coress vLLM's block boundary
+            - Need to discard token
+        - Sampling --> verification
+        - Minimize overhead (ngram)
+        - How to configure how many # of tokens should we guess
+        - How to distinguish between requests
+            - Different request: different  # of tokens, part of them does not run spec decode
+                        
