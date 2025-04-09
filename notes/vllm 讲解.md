@@ -109,7 +109,7 @@ vllm 代码库
     - between workers: communicate intermediateTensor
     - `get_pp_group()`
     - `vllm/workder/model_runner.py`: search `get_pp_group()`
-- Expert parallel & data parallel (advanced)
+- Expert parallel(EP) & data parallel(DP) (advanced)
     - why expert paralel:
         * Mistral / Mixtral / Deepseek model: Mixture of Experts (Moe)
             - Only ofr linear layers
