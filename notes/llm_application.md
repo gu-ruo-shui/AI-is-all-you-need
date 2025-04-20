@@ -38,7 +38,15 @@
 
 ## deploy
 - ollma
-- 
+- vllm
+- SGLang
+
+## 一些思考
+
+如果把 LLM 看成编程语言的话, 那么基于 MCP 的各种 Server 就可以认为是各种各样的库。
+以后的编程范式说不定就变成了， 我们使用自然语言与 LLM 进行对话， 实现各种各样的需求
+如果一件事情 需要 2天去做, 我们大概率不会去做, 但是现在只需要半个小时尝试, 说不定愿意尝试了
+就好像 python vs C or js vs C
 
 # reference
 - https://ninehills.tech/articles/97.html
@@ -47,3 +55,5 @@
 - https://platform.openai.com/tokenizer
 - https://docs.cohere.com/docs/controlling-generation-with-top-k-top-p
 - https://github.com/ray-project/llm-numbers#1-mb-gpu-memory-required-for-1-token-of-output-with-a-13b-parameter-model
+- https://www.bilibili.com/video/BV1iuXkYHE2B
+- 
