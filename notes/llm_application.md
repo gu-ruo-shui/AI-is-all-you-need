@@ -26,7 +26,6 @@
 
 ## prompt engineering
 - [普通人如何通过DeepSeek提升工作效率](https://www.bilibili.com/video/BV1UdAVeXECY)
-- [12个精选prompt框架 ](https://waytoagi.feishu.cn/wiki/ByWEw79g5icSQGkAcNrcgbBonUc)
 - https://www.promptingguide.ai/
 - https://llmnanban.akmmusai.pro/Introductory/Prompt-Elements/
 - https://www.leeboonstra.dev/prompt-engineering/prompt_engineering_guide6/ 系列
@@ -35,6 +34,7 @@
 ## RAG & ReRank
 ## MCP (function call)
 ## agent & workflow
+- https://arthurchiao.art/blog/build-effective-ai-agent-zh/#11-workflow-vs-agent
 
 ## deploy
 - ollma
